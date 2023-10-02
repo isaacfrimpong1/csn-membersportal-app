@@ -12,10 +12,10 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-         //$schedule->command('app:fetch-sales-data')->hourly();
-         $schedule->command('app:fetch-sales-data')->everyminute();
-         $schedule->command('app:fetch-stock-data')->hourly(24);
-         //$schedule->command('app:fetch-stock-data')->everyminute();
+         $schedule->command('app:fetch-sales-data')->hourly();
+         //$schedule->command('app:fetch-sales-data')->everyminute();
+         //$schedule->command('app:fetch-stock-data')->hourly(24);
+         $schedule->command('app:fetch-stock-data')->everyminute();
 
     }
 
