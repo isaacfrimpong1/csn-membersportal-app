@@ -81,15 +81,15 @@
 
 
 <div style="margin-bottom: 40px;"> <!-- Add margin for spacing -->
-
-Start Date: <input type="date" id="start-date" placeholder="Start Date" style="color: black;">
-End Date: <input type="date" id="end-date" placeholder="End Date" style="color: black;"> 
-
-<button id="styled-button" style="background-color: #00FF00; color: black; border: none; padding: 10px 20px; border-radius: 5px; font-size: 16px; transition: background-color 0.3s;">
-    Search
-</button>
+<form style="display: inline;">
+    Start Date: <input type="date" id="start-date" name="start-date" placeholder="Start Date" style="color: black;" value="{{ $request->date('start-date')?->format('Y-m-d') }}" />
+    End Date: <input type="date" id="end-date" name="end-date" placeholder="End Date" style="color: black;" value="{{ $request->date('end-date')?->format('Y-m-d') }}"  />
+    <input type="submit" value="Search" id="styled-button" style="background-color: #00FF00; color: black; border: none; padding: 10px 20px; border-radius: 5px; font-size: 16px; transition: background-color 0.3s;" />
+</form>
+<form style="display: inline;">
+    <input type="submit" value="Reset" id="styled-button" style="background-color: #DDDDDD; color: black; border: none; padding: 10px 20px; border-radius: 5px; font-size: 16px; transition: background-color 0.3s;" />
+</form>
 </div>
-
 
 <!-- <h2>Items in Stock</h2> --> 
 @if (!empty($orders))
