@@ -45,34 +45,6 @@
 
 </style>
 
-
-<!-- Include Pikaday Stylesheet -->
-<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/pikaday/1.8.0/css/pikaday.min.css">
-
-<!-- Include Pikaday JavaScript -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pikaday/1.8.0/js/pikaday.min.js"></script>
-
-<!-- Include Pikaday Range JavaScript -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pikaday/1.8.0/plugins/pikaday.jquery.min.js"></script>
-
-
-<script>
-    // Initialize Pikaday Range
-    var startDatePicker = new Pikaday({
-        field: document.getElementById('start-date'),
-        format: 'MM/DD/YYYY', // Customize the date format as needed
-        // Add any other configuration options here
-    });
-
-    var endDatePicker = new Pikaday({
-        field: document.getElementById('end-date'),
-        format: 'MM/DD/YYYY', // Customize the date format as needed
-        // Add any other configuration options here
-    });
-</script>
-
-
-
 <div class="py-12">
 <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
