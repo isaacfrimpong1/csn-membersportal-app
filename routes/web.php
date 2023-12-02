@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\adminController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -20,6 +21,10 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', 'DashboardController@getItems')->name('dashboard');
+
+Route::get('/stock', 'App\Http\Controllers\StockController@show')->name('stock');
+
+Route::get('/admin', 'App\Http\Controllers\AdminController@show')->name('admin');
 
 Route::get('/dashboard', [DashboardController::class, 'show'], function () {
     return view('dashboard');
