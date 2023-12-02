@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 
+
 class DashboardController extends Controller
 {
 
@@ -30,7 +31,7 @@ public function show(Request $request)
     $end_date = $request->date('end-date') ?? Carbon::today();
 
     // Execute your PostgreSQL query and fetch the results
-    $orders = DB::select('
+    $ordersQuery = DB::select('
         SELECT 
             o.item_name,
             o.order_date,
@@ -48,16 +49,26 @@ public function show(Request $request)
     ', [$businessId, $start_date, $end_date]);
 
 
-    $orders = collect($orders);
-
-    // Calculate the sums for total_base_price, total_discount, and total_gross_amount
-    $sumBasePrice = number_format($orders->sum('total_base_price'), 2);
-    $sumDiscount = number_format($orders->sum('total_discount'), 2);
-    $sumGrossAmount = number_format($orders->sum('total_gross_amount'), 2);
-    $sumTotalMoney = number_format($orders->sum('total_money'), 2);
+    $allOrders = collect($ordersQuery);
     
-    return view('dashboard', compact('businessName', 'businessId', 'orders', 'sumBasePrice', 'sumDiscount', 'sumGrossAmount','sumTotalMoney', 'request'));
+    // Calculate the totals
+    $summariseOrders = function ($orders) {
+        return array(
+            'item_name'=> $orders->value('item_name'),
+            'quantity'=> $orders->sum('quantity'),
+            'total_base_price'=> $orders->sum('total_base_price'),
+            'total_discount'=> $orders->sum('total_discount'),
+            'total_gross_amount'=> $orders->sum('total_discount'),
+            'total_money'=> $orders->sum('total_money'),
+        );
+    };
+    $orderTotals = $summariseOrders($allOrders);
 
+    // Find the best-sellers
+    $salesByProduct = $allOrders->groupBy('item_name')->map($summariseOrders)->sortByDesc('total_money');
+    $bestSellers = $salesByProduct->take(5);
+
+    return view('dashboard', compact('businessName', 'businessId', 'allOrders', 'orderTotals', 'bestSellers', 'request'));
 }
 
 }
