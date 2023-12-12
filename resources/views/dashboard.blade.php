@@ -20,6 +20,7 @@
 }
 
 .table thead th {
+    color: #fff;
     background-color: #000;
     font-weight: bold;
 }
@@ -45,34 +46,6 @@
 
 </style>
 
-
-<!-- Include Pikaday Stylesheet -->
-<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/pikaday/1.8.0/css/pikaday.min.css">
-
-<!-- Include Pikaday JavaScript -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pikaday/1.8.0/js/pikaday.min.js"></script>
-
-<!-- Include Pikaday Range JavaScript -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pikaday/1.8.0/plugins/pikaday.jquery.min.js"></script>
-
-
-<script>
-    // Initialize Pikaday Range
-    var startDatePicker = new Pikaday({
-        field: document.getElementById('start-date'),
-        format: 'MM/DD/YYYY', // Customize the date format as needed
-        // Add any other configuration options here
-    });
-
-    var endDatePicker = new Pikaday({
-        field: document.getElementById('end-date'),
-        format: 'MM/DD/YYYY', // Customize the date format as needed
-        // Add any other configuration options here
-    });
-</script>
-
-
-
 <div class="py-12">
 <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
@@ -92,7 +65,7 @@
 </div>
 
 <!-- <h2>Items in Stock</h2> --> 
-@if (!empty($orders))
+@if (!empty($allOrders))
 <div class="table-wrapper">
 <table class="table">
 <thead>
@@ -107,33 +80,56 @@
 </tr>
 </thead>
 <tbody>
+    {{-- List best selling products first --}}
+    <tr><td colspan="3"></td></tr>
+    <tr class="green-row">
+        <td><strong>Best Sellers</strong></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
 
-    <!-- Display the sums at the end of the table -->
-            <tr><td colspan="3"></td></tr>
-            <tr class="green-row">
-                <td><strong>Total Amount </strong></td>
-                <td></td>
-                <td></td>
-                <td><strong>£{{ $sumBasePrice }}</strong></td>
-                <td><strong>£{{ $sumGrossAmount }}</strong></td>
-                <td><strong>£{{ $sumDiscount }}</strong></td>
-                <td><strong>£{{ $sumTotalMoney }}</strong></td>
-            </tr>
-            <tr><td colspan="3"></td></tr>
-
+@foreach ($bestSellers as $order)
+    <tr>
+        <td></td>
+        <td>{{ $order['item_name'] }}</td>
+        <td>{{ $order['quantity'] }}</td>
+        <td>£{{ number_format($order['total_base_price'], 2) }}</td>
+        <td>£{{ number_format($order['total_gross_amount'], 2) }}</td>
+        <td>£{{ number_format($order['total_discount'], 2) }}</td>
+        <td><strong>£{{ number_format($order['total_money'], 2) }}</td>
+    </tr>
+@endforeach
+    {{-- Totals for all sales --}}
+    <tr><td colspan="3"></td></tr>
+    <tr></tr>
+    <tr class="green-row">
+        <td><strong>All Sales</strong></td>
+        <td></td>
+        <td>{{ $orderTotals['quantity'] }}</td>
+        <td><strong>£{{ number_format($orderTotals['total_base_price'], 2) }}</strong></td>
+        <td><strong>£{{ number_format($orderTotals['total_gross_amount'], 2) }}</strong></td>
+        <td><strong>£{{ number_format($orderTotals['total_discount'], 2) }}</strong></td>
+        <td><strong>£{{ number_format($orderTotals['total_money'], 2) }}</strong></td>
+    </tr>
+    
+    {{-- List all sales --}}
+    <tr><td colspan="3"></td></tr>
 @php $counter = 0; @endphp
-@foreach ($orders as $order)                                        
-            <tr>
-                <td>{{ \Carbon\Carbon::parse($order->order_date)->format('M d,Y') }}</td>
-                <td>{{ $order->item_name }}</td>
-                <td class="text-left">{{ $order->quantity }}</td>
-                <td>£{{ number_format($order->total_base_price, 2) }}</td>
-                <td>£{{ number_format($order->total_gross_amount, 2) }}</td>
-                <td>£{{ number_format($order->total_discount, 2) }}</td>
-                <td>£{{ number_format($order->total_money, 2) }}</td>
-            </tr>
-
-        @php $counter++; @endphp
+@foreach ($allOrders as $order)
+    <tr>
+        <td>{{ \Carbon\Carbon::parse($order->order_date)->format('M d,Y') }}</td>
+        <td>{{ $order->item_name }}</td>
+        <td class="text-left">{{ $order->quantity }}</td>
+        <td>£{{ number_format($order->total_base_price, 2) }}</td>
+        <td>£{{ number_format($order->total_gross_amount, 2) }}</td>
+        <td>£{{ number_format($order->total_discount, 2) }}</td>
+        <td>£{{ number_format($order->total_money, 2) }}</td>
+    </tr>
+@php $counter++; @endphp
 @endforeach
 </tbody>
 </table>

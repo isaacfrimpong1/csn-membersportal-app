@@ -56,7 +56,7 @@ public function show(Request $request)
     $sumDiscount = number_format($orders->sum('total_discount'), 2);
     $sumGrossAmount = number_format($orders->sum('total_gross_amount'), 2);
     $sumTotalMoney = number_format($orders->sum('total_money'), 2);
-    $sumQuantity = number_format($orders->sum('quantity'), 2);
+    $sumQuantity = $orders->sum('quantity');
     
     return view('admin', compact('orders', 'sumBasePrice', 'sumDiscount', 'sumGrossAmount','sumTotalMoney', 'sumQuantity','request','businesses'));
 
