@@ -7,6 +7,7 @@ use Square\SquareClient;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Square\Models\RetrieveInventoryCountResponse;
 
 
 class FetchStockData extends Command
@@ -76,7 +77,6 @@ class FetchStockData extends Command
             $sku = $item->getItemData()->getVariations()[0]->getItemVariationData()->getSku();
             $item_name = $item->getItemData()->getName();
 
-
             $price = 0; // Default value in case price retrieval fails
 
             $variations = $item->getItemData()->getVariations();
@@ -103,11 +103,37 @@ class FetchStockData extends Command
                 Log::info('SKU NOT INSERTED: ' . $sku);
             }
 
-
-
-
             /*$price = $item->getItemData()->getVariations()[0]->getItemVariationData()->getpricemoney()->getamount() / 100;*/
             $catalog_object_id = $item->getItemData()->getVariations()[0]->getID();
+
+            If(!empty($catalog_object_id)){
+
+                /* Get Qunantity */
+                $apiResponse = $squareClient->getInventoryApi()->retrieveInventoryCount($catalog_object_id);
+                
+                // Check if the response is successful
+                if ($apiResponse->isSuccess()) {
+                    $result = $apiResponse->getResult();
+                    
+                    // Check if the result and counts are not null
+                    if ($result && $counts = $result->getCounts()) {
+                        // Check if there is at least one count
+                        if (!empty($counts)) {
+                            // Get the quantity from the first count
+                            $quantity = $counts[0]->getQuantity();
+
+                            // Now you can use $quantity as needed
+                             Log::info('Quantity: ' . $quantity);
+                        }
+                    }    
+
+                } else {
+                    // Handle errors if the request was not successful
+                    $errors = $apiResponse->getErrors();
+                    Log::info('Error retrieving inventory count: ' . implode(', ', $errors));
+                }
+
+            }
 
             /* Assign the correct business id vale to each business product */
             if (strpos($sku, 'BSG') !== false) {
@@ -127,6 +153,7 @@ class FetchStockData extends Command
                     'sku' => $sku,
                     'item_name' => $item_name,
                     'price' => $price,
+                    'quantity' => $quantity,
                     'business_id' => $business_id,
                     'date_updated' => $today,
                     'catalog_object_id' => $catalog_object_id,
