@@ -31,6 +31,7 @@ class FetchStockData extends Command
      */
     public function handle()
     {
+        $locationID = 'LPJR104NJFFE6';
         //
         // Use the square API to fetch all products in the store
         $squareClient = new SquareClient([
@@ -109,7 +110,7 @@ class FetchStockData extends Command
             If(!empty($catalog_object_id)){
 
                 /* Get Qunantity */
-                $apiResponse = $squareClient->getInventoryApi()->retrieveInventoryCount($catalog_object_id);
+                $apiResponse = $squareClient->getInventoryApi()->retrieveInventoryCount($catalog_object_id, $locationID);
                 
                 // Check if the response is successful
                 if ($apiResponse->isSuccess()) {
