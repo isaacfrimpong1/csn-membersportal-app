@@ -29,7 +29,13 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+            // Check if the authenticated user has an admin username
+            if (auth()->check() && auth()->user()->username === 'admin') {
+                return redirect()->route('admin'); // Redirect to the admin page
+            }
+
         return redirect()->intended(RouteServiceProvider::HOME);
+
     }
 
     /**
