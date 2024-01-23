@@ -12,8 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('Sales', function (Blueprint $table) {
-            $table->string('uid')->unique();
-            $table->string('order_id')->unique();
+            $table->id();
+            $table->string('uid');
+            $table->string('order_id');
             $table->string('order_date');
             $table->string('item_name');
             $table->string('base_price');
