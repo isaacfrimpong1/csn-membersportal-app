@@ -1,7 +1,7 @@
 <x-app-layout>
 <x-slot name="header">
 <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-{{ __('Admin Sales') }}
+{{ __('Sales for all Businesses') }}
 </h2>
 </x-slot>
 
@@ -50,13 +50,17 @@
 <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/pikaday/1.8.0/css/pikaday.min.css">
 
 <!-- Include Pikaday JavaScript -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pikaday/1.8.0/js/pikaday.min.js"></script>
+<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/pikaday/1.8.0/js/pikaday.min.js"></script> -->
+<script src="https://cdn.jsdelivr.net/npm/pikaday/pikaday.js"></script>
 
 <!-- Include Pikaday Range JavaScript -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pikaday/1.8.0/plugins/pikaday.jquery.min.js"></script>
+<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/pikaday/1.8.0/plugins/pikaday.jquery.min.js"></script>-->
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/pikaday/css/pikaday.css">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
 
-<script>
+
+<script type="text/javascript">
     // Initialize Pikaday Range
     var startDatePicker = new Pikaday({
         field: document.getElementById('start-date'),
@@ -69,25 +73,135 @@
         format: 'MM/DD/YYYY', // Customize the date format as needed
         // Add any other configuration options here
     });
-</script>
 
+    // Script to handle dynamic search
+
+    $(document).ready(function() {
+        $('#search').on('keyup',function(){
+            //$value=$(this).val();
+            var query = $(this).val().toLowerCase();
+            console.log(query);
+            if (query === '') {
+                $('#search-results').html(''); // Clear the search results if the query is empty
+                return; // Exit the function early
+            }
+            $.ajax({
+                method : 'GET',
+                url : '/search',
+                //data:{'searchBusiness':$value},
+                data: {query: query},
+                success:function(data){
+                    displaySearchResults(data);
+            },
+                    error: function(error) {
+                        console.log(error);
+                    }
+            });
+    });
+
+    // Function to display search results in dropdown
+    function displaySearchResults(results) {
+        var dropdown = '<ul class="dropdown-menu" aria-labelledby="dropdownMenu">';
+        results.forEach(function(result) {
+            dropdown += '<li class="dropdown-item">' + result + '</li>';
+        });
+        dropdown += '</ul>';
+        $('#search-results').html(dropdown);
+        
+        // Handle click on search result
+        $('.dropdown-item').click(function() {
+            var selectedResult = $(this).text();
+            $('#search').val(selectedResult);
+            $('#search-results').html('');
+        });
+    }
+
+});
+
+
+
+/**
+    $(document).ready(function() {
+        $('#search').on('input', function() {
+            var query = $(this).val();
+
+            if (query.length >= 3) { // Adjust the minimum length for triggering the search
+
+                $.ajax({
+                    url: '/search-business',
+                    method: 'GET',
+                    data: {query: query},
+                    success: function(data) {
+                        displaySearchResults(data);
+                    },
+                    error: function(error) {
+                        console.log(error);
+                    }
+                });
+            } else {
+                $('#search-results').empty(); // Clear the results if the input is less than the minimum length
+            }
+        });
+
+        function displaySearchResults(results) {
+            var resultsContainer = $('#search-results');
+            resultsContainer.empty();
+
+            if (results.length > 0) {
+                resultsContainer.append('<select id="businessSelect" name="selectedBusiness" style="color: black;">');
+
+                results.forEach(function(result) {
+                    resultsContainer.append('<option id="business_id" name="business_id" value="'+ result.business_id +'" style="color: black;">' + result.business_name + '</option>'); // Adjust the column_name based on your model
+                });
+
+                resultsContainer.append('</select>');
+            } else {
+                resultsContainer.append('<p>No results found.</p>');
+            }
+        }
+    });
+*/
+
+
+</script>
+<script type="text/javascript">
+    $.ajaxSetup({ headers: { 'csrftoken' : '{{ csrf_token() }}' } });
+</script>
 
 
 <div class="py-12">
 <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
 <div class="p-6 text-gray-900 dark:text-gray-100">
-{{ __("Welcome Admin User") }} <br/> <br/>
+
 
 
 <div style="margin-bottom: 40px;"> <!-- Add margin for spacing -->
 <form style="display: inline;">
-    <label for="selectBox">Select Business </label>
+    <label for="selectBox">Search for Business </label>
+    
+<select id="businessSelect" name="selectedBusiness" style="color: black;">
+    @foreach ($businesses as $business)
+        <option id="business_{{ $business->business_id }}" name="business_id" value="{{ $business->business_id }}" {{ $business->business_id == request()->input('selectedBusiness') ? 'selected' : '' }} style="color: black;">{{ $business->business_name }}</option>
+    @endforeach
+</select>
+
+
+
+<!--
     <select id="businessSelect" name="selectedBusiness" style="color: black;">
         @foreach ($businesses as $business)
             <option id="business_id" name="business_id" value="{{ $business->business_id }}" {{ $business->business_id == $request->input('business_id') ? 'selected' : '' }} style="color: black;">{{ $business->business_name }}</option>
         @endforeach
     </select>
+-->
+
+    <!--<input style="color: black;" type="text" class="form-control" id="search" name="search" placeholder="Type to search...">
+    <div id="search-results">
+        <ul id="businessSelect" name="selectedBusiness" style="color: black;">
+        </ul>
+    </div>
+    -->
     Start Date: <input type="date" id="start-date" name="start-date" placeholder="Start Date" style="color: black;" value="{{ $request->date('start-date')?->format('Y-m-d') }}" />
     End Date: <input type="date" id="end-date" name="end-date" placeholder="End Date" style="color: black;" value="{{ $request->date('end-date')?->format('Y-m-d') }}"  />
     <input type="submit" value="Search" id="styled-button" style="background-color: #00FF00; color: black; border: none; padding: 10px 20px; border-radius: 5px; font-size: 16px; transition: background-color 0.3s;" />

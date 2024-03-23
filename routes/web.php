@@ -40,6 +40,8 @@ Route::get('/stock', 'App\Http\Controllers\StockController@show')->name('stock')
 
 Route::get('/admin', 'App\Http\Controllers\AdminController@show')->name('admin');
 
+Route::get('/search', [AdminController::class, 'searchBusiness']);
+
 Route::get('/dashboard', [DashboardController::class, 'show'], function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
