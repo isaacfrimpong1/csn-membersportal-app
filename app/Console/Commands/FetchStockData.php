@@ -78,133 +78,157 @@ class FetchStockData extends Command
                 // NEW LOOP TO GET ALL item variations.
 
                 $variations = $item->getItemData()->getVariations();
+                $variationIds = [];
 
-                /** foreach ($variations as $variation) {
+                if (!empty($variations)) {
 
-                    $sku = $variation->getItemVariationData()->getSku();
-                    $item_name = $item->getItemData()->getName();
+                    foreach ($variations as $variation) {
 
-                } */
+                        $variationData = $variation->getItemVariationData();
 
-            $sku = $item->getItemData()->getVariations()[0]->getItemVariationData()->getSku();
-            $item_name = $item->getItemData()->getName();
+                        $sku = $variation->getItemVariationData()->getSku();
+                        $item_name = $item->getItemData()->getName();
+                        $item_variation_name = $variation->getItemVariationData()->getName();
+                        $item_name = $item_name . " " . $item_variation_name;
+                        $variationIds[] = $variation->getID();
 
-            $price = 0; // Default value in case price retrieval fails
+                        $price = 0; // Default value in case price retrieval fails
 
-            $variations = $item->getItemData()->getVariations(); // CHANGE
+                                if ($variationData) {
+                                    $priceMoney = $variationData->getPricemoney();
+                                    
+                                    if ($priceMoney) {
+                                        $amount = $priceMoney->getAmount();
+                                        if (!is_null($amount)) {
+                                            $price = $amount / 100;
+                                        }
+                                    }
+                                }
 
-            if (!empty($variations) && isset($variations[0])) {
-                $variationData = $variations[0]->getItemVariationData();
-                
-                if ($variationData) {
-                    $priceMoney = $variationData->getPricemoney();
-                    
-                    if ($priceMoney) {
-                        $amount = $priceMoney->getAmount();
-                        if (!is_null($amount)) {
-                            $price = $amount / 100;
-                        }
+                                if(empty($sku))
+                                {
+                                    //Log::info('SKU FOUND: ' . $sku);
+                                    Log::info('ITEM NAME FOR EMPTY SKU: ' . $item_name);
+                                }
+                                else {
+                                    Log::info('SKU NOT INSERTED: ' . $sku);
+                                }
+
+                            /** Check Catalog Item ID retrieval - May need changing*/
+                            //$catalog_object_id = $variation->getItemVariationData()->getItemId();
+                            //$item->getItemData()->getVariations()[0]->getID();
+
+
+
+                            try {
+                                $catalog_object_id = $variation->getID(); //$item->getItemData()->getVariations()->getID();
+                                // Process $catalog_object_id
+
+                            If(!empty($catalog_object_id)){
+
+                                /* Get Qunantity */
+                                $apiResponse = $squareClient->getInventoryApi()->retrieveInventoryCount($catalog_object_id, $locationID);
+                                
+                                // Check if the response is successful
+                                if ($apiResponse->isSuccess()) {
+                                    $result = $apiResponse->getResult();
+                                    
+                                    // Check if the result and counts are not null
+                                    if ($result && $counts = $result->getCounts()) {
+                                        // Check if there is at least one count
+                                        if (!empty($counts)) {
+                                            // Get the quantity from the first count
+                                            $quantity = $counts[0]->getQuantity();
+
+                                            // Now you can use $quantity as needed
+                                             Log::info('Quantity: ' . $quantity);
+                                        }
+                                    }    
+
+                                } else {
+                                    // Handle errors if the request was not successful
+                                    $errors = $apiResponse->getErrors();
+                                    Log::info('Error retrieving inventory count: ' . implode(', ', $errors));
+                                }
+
+                            }
+
+
+                            //$sku = $item->getItemData()->getVariations()[0]->getItemVariationData()->getSku();
+                            //$item_name = $item->getItemData()->getName();
+                            //$variations = $item->getItemData()->getVariations(); // CHANGE
+                            /*$price = $item->getItemData()->getVariations()[0]->getItemVariationData()->getpricemoney()->getamount() / 100;*/
+
+
+                            /* Assign the correct business id vale to each business product */
+                            if(preg_match('/^BSG\d{1,2}$/', $sku)) {
+                                $business_id = 658910; // B Sweet Gifts
+                            }else if(preg_match('/^BK\d{1,2}$/', $sku)){
+                                $business_id = 10978; // By Kala x
+                            }else if(preg_match('/^LS\d{1,2}$/', $sku)){
+                                $business_id = 76309; // Lione & Sheikh
+                            }else if(preg_match('/^L\d{1,2}$/', $sku)){
+                                $business_id = 43908; // Langis
+                            }else if(preg_match('/^NL\d{1,2}$/', $sku)){
+                                $business_id = 87901; // Nourish London
+                            }else if(preg_match('/^BC\d{1,2}$/', $sku)){
+                                $business_id = 90123; // Brûler Candles
+                            }else if(preg_match('/^ES\d{1,2}$/', $sku)){
+                                $business_id = 10876; // Ecozy Scents
+                            }else if(preg_match('/^NAL\d{1,2}$/', $sku)){
+                                $business_id = 54678; // Naila Ahmad London
+                            }else if(preg_match('/^PRJ\d{1,2}$/', $sku)){
+                                $business_id = 90876; // Paquita Ruby Jewellery
+                            }else if(preg_match('/^DTS\d{1,2}$/', $sku)) {
+                                $business_id = 34213; // Dharti The Store
+                            }else if(preg_match('/^QTC\d{1,2}$/', $sku)){
+                                $business_id = 29090; // QTCards
+                            }else if(preg_match('/^HB\d{1,2}$/', $sku)){
+                                $business_id = 87609; // Husn Beauty Ltd
+                            }else if(preg_match('/^ZD\d{1,2}$/', $sku)){
+                                $business_id = 24231; // Ziolla Designs
+                            }else if(preg_match('/^HJ\d{1,2}$/', $sku)){
+                                $business_id = 78365; // Hannah Jean Studio
+                            }else if(preg_match('/^RCJ\d{1,2}$/', $sku)){
+                                $business_id = 9789; // Rock Circle Jewellery
+                            }else if(preg_match('/^JND\d{1,2}$/', $sku)){
+                                $business_id = 90872; // Jinny Ngui Design
+                            }else if(preg_match('/^SP\d{1,2}$/', $sku)){
+                                $business_id = 34001; // Suzanart pottery
+                            }else if(preg_match('/^SBC\d{1,2}$/', $sku)){
+                                $business_id = 20120; // Serenity by Chelles
+                            }else if(preg_match('/^SSC\d{1,2}$/', $sku)){
+                                $business_id = 34612; // Sian Stark Ceramics
+                            }else if(preg_match('/^D\d{1,2}$/', $sku)){
+                                $business_id = 98076; // Dedais Ltd
+                            }else {
+                                $business_id = 1;
+                            }
+
+                            if ($sku) {
+
+                                // Insert the stock information into the stock table
+                                DB::table('stock')->insertOrIgnore([
+                                    'sku' => $sku,
+                                    'item_name' => $item_name,
+                                    'price' => $price,
+                                    'quantity' => $quantity,
+                                    'business_id' => $business_id,
+                                    'date_updated' => $today,
+                                    'catalog_object_id' => $catalog_object_id,
+
+                                ]);
+                            }
+
+                        } catch (\Square\Models\Error $error) {
+                                // Handle the error
+                                Log::error('Square API Error: ' . json_encode($error->getErrors()));
+                    }
+
                     }
                 }
-                if(empty($sku))
-                {
-                    //Log::info('SKU FOUND: ' . $sku);
-                    Log::info('ITEM NAME FOR EMPTY SKU: ' . $item_name);
-                }
-            } else {
-                Log::info('SKU NOT INSERTED: ' . $sku);
-            }
 
-            /*$price = $item->getItemData()->getVariations()[0]->getItemVariationData()->getpricemoney()->getamount() / 100;*/
-            $catalog_object_id = $item->getItemData()->getVariations()[0]->getID();
-
-            If(!empty($catalog_object_id)){
-
-                /* Get Qunantity */
-                $apiResponse = $squareClient->getInventoryApi()->retrieveInventoryCount($catalog_object_id, $locationID);
-                
-                // Check if the response is successful
-                if ($apiResponse->isSuccess()) {
-                    $result = $apiResponse->getResult();
-                    
-                    // Check if the result and counts are not null
-                    if ($result && $counts = $result->getCounts()) {
-                        // Check if there is at least one count
-                        if (!empty($counts)) {
-                            // Get the quantity from the first count
-                            $quantity = $counts[0]->getQuantity();
-
-                            // Now you can use $quantity as needed
-                             Log::info('Quantity: ' . $quantity);
-                        }
-                    }    
-
-                } else {
-                    // Handle errors if the request was not successful
-                    $errors = $apiResponse->getErrors();
-                    Log::info('Error retrieving inventory count: ' . implode(', ', $errors));
-                }
-
-            }
-
-            /* Assign the correct business id vale to each business product */
-            if (strpos($sku, 'BSG') !== false) {
-                $business_id = 658910; // B Sweet Gifts
-            }else if(strpos($sku, 'BK') !== false){
-                $business_id = 10978; // By Kala x
-            }else if(strpos($sku, 'LS') !== false){
-                $business_id = 76309; // Lione & Sheikh
-            }else if (preg_match('/^L\d{1,2}$/', $sku)) {
-                $business_id = 43908; // Langis
-            }else if(strpos($sku, 'NL') !== false){
-                $business_id = 87901; // Nourish London
-            }else if(strpos($sku, 'BC') !== false){
-                $business_id = 90123; // Brûler Candles
-            }else if(strpos($sku, 'ES') !== false){
-                $business_id = 10876; // Ecozy Scents
-            }else if(strpos($sku, 'NAL') !== false){
-                $business_id = 54678; // Naila Ahmad London
-            }else if(strpos($sku, 'PRJ') !== false){
-                $business_id = 90876; // Paquita Ruby Jewellery
-            }else if(strpos($sku, 'DTS') !== false){
-                $business_id = 34213; // Dharti The Store
-            }else if(strpos($sku, 'KK') !== false){
-                $business_id = 78790; // Kismet klay
-            }else if(strpos($sku, 'HB') !== false){
-                $business_id = 87609; // Husn Beauty Ltd
-            }else if(strpos($sku, 'ZD') !== false){
-                $business_id = 24231; // Ziolla Designs
-            }else if(strpos($sku, 'FW') !== false){
-                $business_id = 54567; // Flickerwick limited
-            }else if(strpos($sku, 'HJ') !== false){
-                $business_id = 78365; // Hannah Jean Studio
-            }else if(strpos($sku, 'RCJ') !== false){
-                $business_id = 9789; // Rock Circle Jewellery
-            }else if(strpos($sku, 'JND') !== false){
-                $business_id = 90872; // Jinny Ngui Design
-            }else if(strpos($sku, 'SSC') !== false){
-                $business_id = 34612; // Sian Stark Ceramics
-            }else if(preg_match('/^D\d{1,2}$/', $sku)){
-                $business_id = 98076; // Dedais Ltd
-            }else {
-                $business_id = 1;
-            }
-
-            if ($sku) {
-
-                // Insert the stock information into the stock table
-                DB::table('stock')->insert([
-                    'sku' => $sku,
-                    'item_name' => $item_name,
-                    'price' => $price,
-                    'quantity' => $quantity,
-                    'business_id' => $business_id,
-                    'date_updated' => $today,
-                    'catalog_object_id' => $catalog_object_id,
-
-                ]);
-            }
-        }  
+            }  
 
     }
 }
